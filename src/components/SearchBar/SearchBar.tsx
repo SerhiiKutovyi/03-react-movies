@@ -1,9 +1,20 @@
+import toast, { Toaster } from 'react-hot-toast';
 import css from './SearchBar.module.css';
 
-export default function SearchBar() {
+interface SearchBarProps {
+  onSubmit: (username: string) => Promise<void>;
+}
+
+export default function SearchBar({ onSubmit }: SearchBarProps) {
   const handelSubmit = (formData: FormData) => {
     const username = formData.get('query') as string;
-    console.log(username);
+
+    if (!username) {
+      toast('Please enter your search query');
+      return;
+    }
+
+    onSubmit(username);
   };
 
   return (
@@ -30,6 +41,7 @@ export default function SearchBar() {
             <button className={css.button} type="submit">
               Search
             </button>
+            <Toaster />
           </form>
         </div>
       </header>
