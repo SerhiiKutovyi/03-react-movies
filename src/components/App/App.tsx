@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import axios from 'axios';
 import css from './App.module.css';
 
 import SearchBar from '../SearchBar/SearchBar';
+import MovieGrid from '../MovieGrid/MovieGrid';
 
-export interface Movie {
+interface MovieProps {
   id: number;
   poster_path: string;
   backdrop_path: string;
@@ -13,35 +15,38 @@ export interface Movie {
   vote_average: number;
 }
 
-function App() {
-  // const myKey = import.meta.env.VITE_TMDB_TOKEN;
+axios.defaults.baseURL = 'https://api.themoviedb.org/3/search/movie';
+const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
 
-  // axios.defaults.baseURL = 'https://api.themoviedb.org/3/search/movie';
+function App() {
+  const [movies, setMovie] = useState<MovieProps[]>([]);
+
+  console.log(movies);
 
   const fetchMovies = async (username: string) => {
-    const response = await axios.get(
-      'https://api.themoviedb.org/3/search/movie?include_adult=false&language=en-US&page=1',
-      {
+    try {
+      const { data } = await axios.get<MovieProps>('', {
         params: {
           query: `${username}`,
+          include_adult: false,
+          language: 'en-US',
+          page: 1,
         },
         headers: {
           accept: 'application/json',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmMmRlOGMwNTkyMGE2NjQ1NGU1MWZiMWYyNzdjNmQ1MiIsIm5iZiI6MTc2MjUyMjU1Ni42MzkwMDAyLCJzdWIiOiI2OTBkZjViYzlmNTNiZTJlMDA0YzcxZDQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.YA55gdslOs4xZrrzEszn_y7zyAIzJYcN50G6wf-52gg',
+          Authorization: `Bearer ${TMDB_TOKEN}`,
         },
-      }
-    );
-    console.log(response);
-    console.log('qweqwewq');
-    console.log(username);
-
-    return response;
+      });
+      setMovie(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <div className={css.app}>
       <SearchBar onSubmit={fetchMovies} />
+      <MovieGrid movies={movies} />
     </div>
   );
 }

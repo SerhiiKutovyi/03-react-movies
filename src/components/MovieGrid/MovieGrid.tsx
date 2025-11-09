@@ -1,6 +1,8 @@
 import css from './MovieGrid.module.css';
 
-export default function Loader() {
+function MovieGrid(movies): [] {
+  console.log(movies);
+
   return (
     <ul className={css.grid}>
       {/* Набір елементів списку з фільмами */}
@@ -18,3 +20,4 @@ export default function Loader() {
     </ul>
   );
 }
+export default MovieGrid;
