@@ -1,42 +1,31 @@
 import { useState } from 'react';
 
-import axios from 'axios';
-import toast, { Toaster } from 'react-hot-toast';
-import css from './App.module.css';
-
-import type { Movie, MoviesResponse } from '../../types/movie';
-
+import fetchMovies from '../../services/movieService';
 import SearchBar from '../SearchBar/SearchBar';
 import MovieGrid from '../MovieGrid/MovieGrid';
 import Loader from '../Loader/Loader';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
+import MovieModal from '../MovieModal/MovieModal';
 
-axios.defaults.baseURL = 'https://api.themoviedb.org/3/search/movie';
-const TMDB_TOKEN = import.meta.env.VITE_TMDB_TOKEN;
+import type { Movie } from '../../types/movie';
+
+import toast, { Toaster } from 'react-hot-toast';
+import css from './App.module.css';
 
 function App() {
   const [movies, setMovie] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const fetchMovies = async (username: string): Promise<void> => {
+  const handleSearch = async (query: string): Promise<void> => {
     try {
       setIsLoading(true);
       setIsError(false);
       setMovie([]);
 
-      const { data } = await axios.get<MoviesResponse>('', {
-        params: {
-          query: `${username}`,
-          include_adult: false,
-          language: 'en-US',
-          page: 1,
-        },
-        headers: {
-          accept: 'application/json',
-          Authorization: `Bearer ${TMDB_TOKEN}`,
-        },
-      });
+      const data = await fetchMovies(query);
 
       if (data.results.length === 0) {
         toast('No movies found for your request.');
@@ -51,12 +40,25 @@ function App() {
     }
   };
 
+  const openModal = (movie: Movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
   return (
     <div className={css.app}>
-      <SearchBar onSubmit={fetchMovies} />
+      <SearchBar onSubmit={handleSearch} />
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {movies.length > 0 && <MovieGrid movies={movies} />}
+      {movies.length > 0 && <MovieGrid movies={movies} onSelect={openModal} />}
+      {isModalOpen && selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={closeModal} />
+      )}
       <Toaster />
     </div>
   );
