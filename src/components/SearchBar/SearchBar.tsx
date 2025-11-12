@@ -1,8 +1,10 @@
 import toast, { Toaster } from 'react-hot-toast';
 
-import type { SearchBarProps } from '../../types/movie';
-
 import css from './SearchBar.module.css';
+
+export interface SearchBarProps {
+  onSubmit: (username: string) => Promise<void>;
+}
 
 function SearchBar({ onSubmit }: SearchBarProps) {
   const handelSubmit = (formData: FormData) => {
